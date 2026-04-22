@@ -1,0 +1,269 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Facebook, MessageCircle, HeartCrack, Code, Terminal, CloudRain, ExternalLink, Quote, Music, Play } from 'lucide-react';
+
+// Cấu hình thông tin cá nhân
+const PROFILE_DATA = {
+  name: "Long Ngạo Thiên",
+  title: "Coder • Kẻ Si Tình",
+  status: "Tôi thất tình rồi...",
+  bgImg: "https://i.ibb.co/KxJvddqJ/bg.gif", // Đã thay bằng ảnh nền động mới
+  avatarImg: "https://i.ibb.co/hR6VSvPk/avatar.png", // Đã thay bằng ảnh avatar mới
+  facebookLink: "https://www.facebook.com/HongHoangDaiLuc.MacVanNhien.NhoSiNhanGioi/",
+  discordLink: "https://discord.com/users/1381984368402104444",
+  musicUrl: "https://www.dropbox.com/scl/fi/cf4sq81t6j9jwg1lfo6jt/Th-ng-T-L-L-i-N-i-D-i-C-a-Em-H-Anh-Tu-n_-cut_60sec.mp3?rlkey=v4i2cyz4wbtv0hgd2ye3uzw8c&st=6e7amxja&raw=1"
+};
+
+const Tag = ({ icon: Icon, text, colorClass }) => (
+  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border bg-black/40 backdrop-blur-md ${colorClass}`}>
+    <Icon size={12} />
+    {text}
+  </span>
+);
+
+const LinkButton = ({ icon: Icon, label, href, bgClass, hoverClass }) => (
+  <a 
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={`flex items-center justify-between w-full p-4 rounded-xl text-white transition-all duration-300 group shadow-lg ${bgClass} ${hoverClass}`}
+  >
+    <div className="flex items-center gap-3">
+      <div className="p-2 bg-white/10 rounded-lg group-hover:scale-110 transition-transform">
+        <Icon size={20} />
+      </div>
+      <span className="font-semibold">{label}</span>
+    </div>
+    <ExternalLink size={18} className="opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+  </a>
+);
+
+const MusicPlayer = ({ isPlaying, togglePlay }) => (
+  <div 
+    onClick={togglePlay}
+    className="flex items-center gap-3 bg-black/40 p-3 rounded-2xl backdrop-blur-md border border-white/10 mt-6 shadow-xl animate-fade-in-up cursor-pointer hover:bg-black/60 transition-colors group" 
+    style={{animationDelay: '0.2s'}}
+  >
+    <div className="flex items-end gap-1 h-4 ml-2">
+      <div className={`w-1 bg-pink-500 ${isPlaying ? 'h-full animate-[musicBar_1s_ease-in-out_infinite_alternate]' : 'h-1 transition-all'}`}></div>
+      <div className={`w-1 bg-purple-500 ${isPlaying ? 'h-2/3 animate-[musicBar_1.2s_ease-in-out_infinite_alternate_0.2s]' : 'h-1 transition-all'}`}></div>
+      <div className={`w-1 bg-red-500 ${isPlaying ? 'h-full animate-[musicBar_0.8s_ease-in-out_infinite_alternate_0.4s]' : 'h-1 transition-all'}`}></div>
+    </div>
+    <div className="flex flex-col text-left">
+      <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
+        {isPlaying ? 'Đang phát' : 'Đã tạm dừng'}
+      </span>
+      <span className="text-xs text-neutral-200 font-medium">Tháng 4 Là Lời Nói Dối Của Em...</span>
+    </div>
+    <div className="ml-auto p-2 rounded-full bg-white/5 group-hover:bg-white/10 transition-colors">
+      {isPlaying ? (
+         <Music size={14} className="text-pink-400 animate-[spin_3s_linear_infinite]" />
+      ) : (
+         <Play size={14} className="text-neutral-400 ml-0.5" />
+      )}
+    </div>
+  </div>
+);
+
+const RainDrops = () => {
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+      {[...Array(20)].map((_, i) => (
+        <div 
+          key={i}
+          className="absolute w-[1px] bg-gradient-to-b from-transparent via-white/20 to-transparent animate-rain"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `-${Math.random() * 20 + 10}px`,
+            height: `${Math.random() * 30 + 20}px`,
+            animationDuration: `${Math.random() * 1 + 0.5}s`,
+            animationDelay: `${Math.random() * 2}s`
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+export default function App() {
+  const audioRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.volume = 0.5; // Đặt âm lượng mặc định 50%
+      // Cố gắng tự động phát nhạc khi trang vừa load
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          setIsPlaying(true);
+        }).catch(error => {
+          // Xử lý lỗi nếu nguồn âm thanh không hỗ trợ hoặc trình duyệt chặn autoplay
+          console.warn("Autoplay bị chặn hoặc nguồn nhạc không được hỗ trợ:", error);
+          setIsPlaying(false);
+        });
+      }
+    }
+  }, []);
+
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (audio) {
+      if (isPlaying) {
+        audio.pause();
+        setIsPlaying(false);
+      } else {
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            setIsPlaying(true);
+          }).catch(error => {
+            // Xử lý lỗi unhandled rejection khi click nút play
+            console.error("Không thể phát nhạc:", error);
+            setIsPlaying(false);
+          });
+        }
+      }
+    }
+  };
+
+  const handleAudioError = () => {
+    console.error("Lỗi khi tải nguồn âm thanh. Vui lòng kiểm tra lại URL nhạc.");
+    setIsPlaying(false);
+  };
+
+  return (
+    <div 
+      className="min-h-screen bg-cover bg-center bg-fixed flex items-center justify-center p-4 py-12 font-sans relative overflow-hidden"
+      style={{ backgroundImage: `url(${PROFILE_DATA.bgImg})` }}
+    >
+      <audio 
+        ref={audioRef} 
+        src={PROFILE_DATA.musicUrl} 
+        loop 
+        onError={handleAudioError}
+      />
+
+      {/* Lớp phủ tối gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-[#0a0a0a]/90 to-[#050505] backdrop-blur-sm z-0"></div>
+
+      <RainDrops />
+
+      {/* Main Bio Container - Glassmorphism */}
+      <div className="relative z-10 w-full max-w-lg bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-[2.5rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden p-8 sm:p-10 animate-fade-in-up">
+        
+        {/* Ambient Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-red-500/10 blur-[60px] pointer-events-none rounded-full"></div>
+
+        {/* Header: Avatar & Title */}
+        <div className="flex flex-col items-center text-center relative z-10">
+          
+          {/* Avatar with Cyberpunk/Neon Frame */}
+          <div className="relative mb-8 group hover:scale-105 transition-transform duration-500">
+            <div className="absolute -inset-4 border border-pink-500/20 rounded-full animate-[spin_15s_linear_infinite] group-hover:border-pink-500/50 transition-colors"></div>
+            <div className="absolute -inset-4 border-r-2 border-red-500/50 rounded-full animate-[spin_10s_linear_infinite_reverse] group-hover:border-red-500 transition-colors"></div>
+            
+            <div className="relative w-32 h-32 rounded-full border-4 border-neutral-900 overflow-hidden shadow-[0_0_30px_rgba(220,38,38,0.2)] group-hover:shadow-[0_0_40px_rgba(220,38,38,0.5)] transition-all duration-500">
+              <img 
+                src={PROFILE_DATA.avatarImg} 
+                alt="Avatar" 
+                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+              />
+            </div>
+            
+            {/* DEV Badge */}
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-red-600 to-pink-600 text-white text-[10px] font-black px-4 py-1 rounded-full tracking-widest shadow-lg border border-red-400/50 uppercase">
+              CODER
+            </div>
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-500 to-purple-500 mb-2 animate-fade-in-up" style={{animationDelay: '0.1s'}}>
+            {PROFILE_DATA.name}
+          </h1>
+          <p className="text-neutral-400 font-medium tracking-wide animate-fade-in-up" style={{animationDelay: '0.2s'}}>
+            {PROFILE_DATA.title}
+          </p>
+
+          {/* Tags */}
+          <div className="flex flex-wrap justify-center gap-2 mt-5 animate-fade-in-up" style={{animationDelay: '0.3s'}}>
+            <Tag icon={HeartCrack} text="Thất Tình" colorClass="text-red-400 border-red-900/50 hover:bg-red-900/20 transition-colors cursor-default" />
+            <Tag icon={Terminal} text="Nhận Code Dạo" colorClass="text-blue-400 border-blue-900/50 hover:bg-blue-900/20 transition-colors cursor-default" />
+            <Tag icon={CloudRain} text="Tâm Trạng Buồn" colorClass="text-neutral-300 border-neutral-700 hover:bg-neutral-800 transition-colors cursor-default" />
+          </div>
+
+          <MusicPlayer isPlaying={isPlaying} togglePlay={togglePlay} />
+        </div>
+
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-neutral-700 to-transparent my-8 opacity-50"></div>
+
+        {/* Thơ Section */}
+        <div className="relative px-4 py-6 animate-fade-in-up group" style={{animationDelay: '0.4s'}}>
+          <div className="absolute inset-0 bg-gradient-to-b from-red-900/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <Quote className="absolute top-0 left-0 text-red-500/20 w-12 h-12 -translate-y-2 -translate-x-2 group-hover:text-red-500/40 transition-colors duration-500" />
+          <div className="relative z-10 text-center font-serif text-neutral-400 leading-relaxed text-[15px] sm:text-base space-y-1 drop-shadow-md">
+            <p className="hover:text-white transition-colors duration-300">Khúc xuân reo, rạo rực rặng mùng tơi,</p>
+            <p className="hover:text-white transition-colors duration-300">Tôi đem yêu, rót cạn cả đất trời.</p>
+            <p className="hover:text-white transition-colors duration-300">Ngỡ chung nhịp, giữa một vầng trăng vỡ,</p>
+            <p className="hover:text-white transition-colors duration-300">Sao tim người, hóa thạch để sầu rơi?</p>
+            <div className="h-4"></div>
+            <p className="hover:text-white transition-colors duration-300">Mãi về sau, bến cũ vắng con đò,</p>
+            <p className="hover:text-white transition-colors duration-300">Mới ngộ ra, mộng ước hóa tàn tro.</p>
+            <p className="hover:text-white transition-colors duration-300">Tim tôi nở, cả một vườn hoa nhỏ,</p>
+            <p className="hover:text-red-400 text-neutral-300 transition-colors duration-300 font-medium">Tim của nàng,… khép chặt cửa chiêm bao.</p>
+          </div>
+          <Quote className="absolute bottom-0 right-0 text-red-500/20 w-12 h-12 rotate-180 translate-y-2 translate-x-2 group-hover:text-red-500/40 transition-colors duration-500" />
+        </div>
+
+        {/* Links Section */}
+        <div className="mt-10 space-y-4 animate-fade-in-up" style={{animationDelay: '0.5s'}}>
+          <LinkButton 
+            href={PROFILE_DATA.facebookLink}
+            icon={Facebook}
+            label="Mặc Vân Nhiên (Si Nhân)"
+            bgClass="bg-[#0866FF]/10 border border-[#0866FF]/30 backdrop-blur-md"
+            hoverClass="hover:bg-[#0866FF]/30 hover:border-[#0866FF]/60 hover:-translate-y-1 hover:shadow-[0_10px_20px_-10px_rgba(8,102,255,0.4)]"
+          />
+          <LinkButton 
+            href={PROFILE_DATA.discordLink}
+            icon={MessageCircle}
+            label="Kết nối Discord"
+            bgClass="bg-[#5865F2]/10 border border-[#5865F2]/30 backdrop-blur-md"
+            hoverClass="hover:bg-[#5865F2]/30 hover:border-[#5865F2]/60 hover:-translate-y-1 hover:shadow-[0_10px_20px_-10px_rgba(88,101,242,0.4)]"
+          />
+        </div>
+
+        {/* Footer */}
+        <div className="mt-10 text-center animate-fade-in-up" style={{animationDelay: '0.6s'}}>
+          <p className="text-[11px] text-neutral-500 font-medium uppercase tracking-widest">
+            404 Love Not Found • {new Date().getFullYear()}
+          </p>
+        </div>
+
+      </div>
+
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes fade-in-up {
+          0% { opacity: 0; transform: translateY(20px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+          animation: fade-in-up 0.8s ease-out forwards;
+          opacity: 0;
+        }
+        @keyframes musicBar {
+          0% { height: 20%; }
+          100% { height: 100%; }
+        }
+        @keyframes rain {
+          0% { transform: translateY(-100px); opacity: 0; }
+          20% { opacity: 1; }
+          80% { opacity: 1; }
+          100% { transform: translateY(100vh); opacity: 0; }
+        }
+        .animate-rain {
+          animation: rain linear infinite;
+        }
+      `}} />
+    </div>
+  );
+}
